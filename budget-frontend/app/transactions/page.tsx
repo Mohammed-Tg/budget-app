@@ -1,0 +1,165 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Layout from "../components/Layout";
+import { apiFetch, getErrorMessage, safeApiJson } from "../lib/api";
+import { useProtectedRoute } from "../lib/auth";
+
+type TransactionType = "income" | "expense";
+
+interface Transaction {
+  id: number;
+  user_id: number;
+  amount: number;
+  type: TransactionType;
+  category: string;
+  date: string;
+}
+
+export default function Transactions() {
+  const isAuthorized = useProtectedRoute();
+  const [txs, setTxs] = useState<Transaction[]>([]);
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState<TransactionType>("expense");
+  const [error, setError] = useState<string | null>(null);
+
+  const loadTransactions = async () => {
+    const response = await apiFetch("/transactions/");
+    const data = await safeApiJson<Transaction[]>(response);
+
+    if (!response.ok) {
+      setError("Transaktionen konnten nicht geladen werden.");
+      return;
+    }
+
+    setTxs(data ?? []);
+  };
+
+  useEffect(() => {
+    if (!isAuthorized) return;
+
+    loadTransactions();
+  }, [isAuthorized]);
+
+  const handleCreate = async () => {
+    setError(null);
+
+    if (!category.trim()) {
+      setError("Kategorie ist erforderlich.");
+      return;
+    }
+
+    const response = await apiFetch("/transactions/", {
+      method: "POST",
+      body: JSON.stringify({
+        amount: Number(amount),
+        type,
+        category,
+      }),
+    });
+
+    const data = await safeApiJson<{ detail?: unknown }>(response);
+    if (!response.ok) {
+      setError(getErrorMessage(data?.detail ?? data, "Konnte Transaktion nicht erstellen."));
+      return;
+    }
+
+    setAmount("");
+    setCategory("");
+    setType("expense");
+    loadTransactions();
+  };
+
+  const handleDelete = async (id: number) => {
+    const response = await apiFetch(`/transactions/${id}`, { method: "DELETE" });
+    const data = await safeApiJson<{ detail?: string }>(response);
+
+    if (!response.ok) {
+      setError(data?.detail || "Konnte Transaktion nicht löschen.");
+      return;
+    }
+
+    loadTransactions();
+  };
+
+  return (
+    <Layout>
+      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="rounded-3xl bg-white p-8 shadow-lg">
+          <h1 className="text-3xl font-semibold mb-4">Transaktionen</h1>
+          {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
+
+          <div className="space-y-4">
+            {txs.map((tx) => (
+              <div key={tx.id} className="rounded-3xl border border-slate-200 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-semibold">{tx.category}</p>
+                    <p className="text-sm text-slate-500">{new Date(tx.date).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold">€{tx.amount.toFixed(2)}</p>
+                    <p className="text-sm text-slate-500">
+                      {tx.type === "income" ? "Einnahme" : "Ausgabe"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDelete(tx.id)}
+                  className="mt-3 rounded-xl bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600"
+                >
+                  Löschen
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-white p-8 shadow-lg">
+          <h2 className="text-2xl font-semibold mb-4">Neue Transaktion</h2>
+
+          <label className="block mb-3 text-sm font-medium text-slate-700">
+            Betrag
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+              placeholder="z. B. 19.99"
+            />
+          </label>
+
+          <label className="block mb-3 text-sm font-medium text-slate-700">
+            Kategorie
+            <input
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+              placeholder="z. B. Lebensmittel"
+            />
+          </label>
+
+          <label className="block mb-4 text-sm font-medium text-slate-700">
+            Typ
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value as TransactionType)}
+              className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+            >
+              <option value="expense">Ausgabe</option>
+              <option value="income">Einnahme</option>
+            </select>
+          </label>
+
+          <button
+            onClick={handleCreate}
+            className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-white hover:bg-slate-700"
+          >
+            Transaktion hinzufügen
+          </button>
+        </section>
+      </div>
+    </Layout>
+  );
+}

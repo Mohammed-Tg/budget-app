@@ -1,0 +1,19 @@
+# Python artifacts
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Node/Next artifacts
+budget-frontend/node_modules/
+budget-frontend/.next/
+budget-frontend/.vercel/
+budget-frontend/out/
+
+# Local environment and build output
+budget.db
+nul
+.env
+
+# System files
+.DS_Store
