@@ -1,13 +1,11 @@
 import os
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
-TEST_DB_PATH = Path(__file__).resolve().parent / "test_budget.db"
 os.environ["SECRET_KEY"] = "test-secret-key"
-os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH.as_posix()}"
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 from app.main import app
 from app.database import engine
@@ -20,8 +18,6 @@ def setup_database():
     SQLModel.metadata.create_all(engine)
     yield
     engine.dispose()
-    if TEST_DB_PATH.exists():
-        TEST_DB_PATH.unlink()
 
 
 @pytest.fixture

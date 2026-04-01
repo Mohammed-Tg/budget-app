@@ -1,6 +1,6 @@
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 export const API_URL =
-  rawApiUrl ?? (process.env.NODE_ENV === "development" ? "http://127.0.0.1:8000" : "");
+  rawApiUrl ?? "http://127.0.0.1:8000";
 
 export async function safeApiJson<T = unknown>(response: Response): Promise<T | null> {
   try {

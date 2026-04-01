@@ -28,7 +28,11 @@ def add_transaction(tx_data: TransactionCreate, current_user=Depends(get_current
 @router.get("/", response_model=list[TransactionOut])
 def get_transactions(current_user=Depends(get_current_user)):
     with Session(engine) as session:
-        statement = select(Transaction).where(Transaction.user_id == current_user.id)
+        statement = (
+            select(Transaction)
+            .where(Transaction.user_id == current_user.id)
+            .order_by(Transaction.date.desc(), Transaction.id.desc())
+        )
         return session.exec(statement).all()
 
 

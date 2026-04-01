@@ -25,15 +25,19 @@ export default function Transactions() {
   const [error, setError] = useState<string | null>(null);
 
   const loadTransactions = async () => {
-    const response = await apiFetch("/transactions/");
-    const data = await safeApiJson<Transaction[]>(response);
+    try {
+      const response = await apiFetch("/transactions/");
+      const data = await safeApiJson<Transaction[]>(response);
 
-    if (!response.ok) {
-      setError("Transaktionen konnten nicht geladen werden.");
-      return;
+      if (!response.ok) {
+        setError(getErrorMessage(data ?? "Transaktionen konnten nicht geladen werden."));
+        return;
+      }
+
+      setTxs(data ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Netzwerkfehler beim Laden der Transaktionen.");
     }
-
-    setTxs(data ?? []);
   };
 
   useEffect(() => {
@@ -50,37 +54,45 @@ export default function Transactions() {
       return;
     }
 
-    const response = await apiFetch("/transactions/", {
-      method: "POST",
-      body: JSON.stringify({
-        amount: Number(amount),
-        type,
-        category,
-      }),
-    });
+    try {
+      const response = await apiFetch("/transactions/", {
+        method: "POST",
+        body: JSON.stringify({
+          amount: Number(amount),
+          type,
+          category,
+        }),
+      });
 
-    const data = await safeApiJson<{ detail?: unknown }>(response);
-    if (!response.ok) {
-      setError(getErrorMessage(data?.detail ?? data, "Konnte Transaktion nicht erstellen."));
-      return;
+      const data = await safeApiJson<{ detail?: unknown }>(response);
+      if (!response.ok) {
+        setError(getErrorMessage(data?.detail ?? data, "Konnte Transaktion nicht erstellen."));
+        return;
+      }
+
+      setAmount("");
+      setCategory("");
+      setType("expense");
+      loadTransactions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Netzwerkfehler beim Erstellen der Transaktion.");
     }
-
-    setAmount("");
-    setCategory("");
-    setType("expense");
-    loadTransactions();
   };
 
   const handleDelete = async (id: number) => {
-    const response = await apiFetch(`/transactions/${id}`, { method: "DELETE" });
-    const data = await safeApiJson<{ detail?: string }>(response);
+    try {
+      const response = await apiFetch(`/transactions/${id}`, { method: "DELETE" });
+      const data = await safeApiJson<{ detail?: string }>(response);
 
-    if (!response.ok) {
-      setError(data?.detail || "Konnte Transaktion nicht löschen.");
-      return;
+      if (!response.ok) {
+        setError(data?.detail || "Konnte Transaktion nicht löschen.");
+        return;
+      }
+
+      loadTransactions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Netzwerkfehler beim Löschen der Transaktion.");
     }
-
-    loadTransactions();
   };
 
   return (
