@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 
 
@@ -63,11 +64,41 @@ def test_get_transactions(client: TestClient, auth_headers):
     assert isinstance(data, list)
     assert len(data) >= 1
 
-    # Check the transaction we created
-    tx = data[-1]  # Last transaction
+    # Check the transaction we created appears in the latest-first list
+    tx = data[0]
     assert tx["amount"] == 25.0
     assert tx["type"] == "income"
     assert tx["category"] == "salary"
+
+
+def test_get_transactions_sorted_by_date_desc(client: TestClient, auth_headers):
+    """Test that transactions are returned latest first."""
+    newer_date = datetime.now(timezone.utc)
+    older_date = newer_date - timedelta(days=1)
+
+    tx_older = {
+        "amount": 10.0,
+        "type": "expense",
+        "category": "older",
+        "date": older_date.isoformat(),
+    }
+    tx_newer = {
+        "amount": 20.0,
+        "type": "expense",
+        "category": "newer",
+        "date": newer_date.isoformat(),
+    }
+
+    client.post("/transactions/", json=tx_older, headers=auth_headers)
+    client.post("/transactions/", json=tx_newer, headers=auth_headers)
+
+    response = client.get("/transactions/", headers=auth_headers)
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data) >= 2
+    assert data[0]["category"] == "newer"
+    assert data[1]["category"] == "older"
 
 
 def test_get_single_transaction(client: TestClient, auth_headers):

@@ -19,15 +19,15 @@ export default function Home() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center rounded-3xl bg-white px-8 py-4 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-950/10 transition hover:bg-slate-100"
+                className="inline-flex items-center justify-center rounded-3xl bg-slate-900 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-slate-950/10 transition duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-200"
               >
                 Kostenlos registrieren
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-3xl border border-white/20 bg-white/10 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/20"
+                className="inline-flex items-center justify-center rounded-3xl border border-white/30 bg-transparent px-8 py-4 text-sm font-semibold text-white transition duration-300 ease-out hover:border-white hover:bg-white/10 hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                Zum Login
+                Zur Anmeldung
               </Link>
             </div>
           </div>

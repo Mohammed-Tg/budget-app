@@ -28,6 +28,7 @@ def add_transaction(tx_data: TransactionCreate, current_user=Depends(get_current
 @router.get("/", response_model=list[TransactionOut])
 def get_transactions(current_user=Depends(get_current_user)):
     with Session(engine) as session:
+        # Sort by latest date first, then by id descending for deterministic ordering
         statement = (
             select(Transaction)
             .where(Transaction.user_id == current_user.id)

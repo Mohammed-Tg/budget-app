@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Budget App",
+  title: "Budget-App",
   description: "Budget-App für Einnahmen, Ausgaben und Übersicht",
 };
 

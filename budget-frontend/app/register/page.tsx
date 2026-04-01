@@ -52,7 +52,7 @@ export default function RegisterPage() {
         <h1 className="text-3xl font-semibold mb-6">Registrieren</h1>
 
         <label className="block mb-3 text-sm font-medium text-slate-700">
-          Email
+          E-Mail
           <input
             type="email"
             value={email}

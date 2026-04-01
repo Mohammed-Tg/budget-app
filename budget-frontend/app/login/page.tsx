@@ -28,7 +28,7 @@ export default function LoginPage() {
         return;
       }
 
-      setError(getErrorMessage(data?.detail ?? data, `Login fehlgeschlagen (${response.status})`));
+      setError(getErrorMessage(data?.detail ?? data, `Anmeldung fehlgeschlagen (${response.status})`));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Netzwerkfehler beim Einloggen.");
     }
@@ -37,10 +37,10 @@ export default function LoginPage() {
   return (
     <Layout>
       <div className="mx-auto w-full max-w-md rounded-3xl bg-white p-8 shadow-md">
-        <h1 className="text-3xl font-semibold mb-6">Login</h1>
+        <h1 className="text-3xl font-semibold mb-6">Anmelden</h1>
 
         <label className="block mb-3 text-sm font-medium text-slate-700">
-          Email
+          E-Mail
           <input
             type="email"
             value={email}
@@ -67,7 +67,7 @@ export default function LoginPage() {
           onClick={handleLogin}
           className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-white hover:bg-slate-700"
         >
-          Einloggen
+          Anmelden
         </button>
       </div>
     </Layout>

@@ -17,7 +17,7 @@ interface Transaction {
 }
 
 export default function Transactions() {
-  const isAuthorized = useProtectedRoute();
+  const { authorized, checking } = useProtectedRoute();
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -41,10 +41,22 @@ export default function Transactions() {
   };
 
   useEffect(() => {
-    if (!isAuthorized) return;
+    if (!authorized) return;
 
     loadTransactions();
-  }, [isAuthorized]);
+  }, [authorized]);
+
+  if (checking) {
+    return (
+      <Layout>
+        <p>Bitte warten...</p>
+      </Layout>
+    );
+  }
+
+  if (!authorized) {
+    return null;
+  }
 
   const handleCreate = async () => {
     setError(null);
