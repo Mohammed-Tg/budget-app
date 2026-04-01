@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     email: str
     password: str = Field(min_length=8, max_length=128)
 
-    @field_validator("email")
+    @field_validator("email", mode="before")
     @classmethod
     def normalize_email(cls, value: str) -> str:
         email = value.strip().lower()
@@ -22,7 +22,7 @@ class UserLogin(BaseModel):
     email: str
     password: str = Field(min_length=8, max_length=128)
 
-    @field_validator("email")
+    @field_validator("email", mode="before")
     @classmethod
     def normalize_email(cls, value: str) -> str:
         email = value.strip().lower()

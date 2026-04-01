@@ -27,6 +27,13 @@ def client():
 
 @pytest.fixture(autouse=True)
 def clean_database():
+    if os.environ.get("DATABASE_URL") == "sqlite:///:memory:":
+        SQLModel.metadata.drop_all(engine)
+        SQLModel.metadata.create_all(engine)
+        yield
+        SQLModel.metadata.drop_all(engine)
+        return
+
     with Session(engine) as session:
         session.exec(delete(Transaction))
         session.exec(delete(User))

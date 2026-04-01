@@ -24,6 +24,7 @@ export default function LoginPage() {
 
       if (response.ok && data?.access_token) {
         localStorage.setItem("token", data.access_token);
+        window.dispatchEvent(new Event("authchange"));
         router.push("/dashboard");
         return;
       }

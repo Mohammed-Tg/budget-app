@@ -2,6 +2,8 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel, create_engine
 from app.core.config import DATABASE_URL, SQL_ECHO
 
+# Schema migration is managed by Alembic migrations.
+# Avoid parallel runtime create_all() usage in production.
 if DATABASE_URL == "sqlite:///:memory:":
     engine = create_engine(
         DATABASE_URL,
@@ -11,6 +13,3 @@ if DATABASE_URL == "sqlite:///:memory:":
     )
 else:
     engine = create_engine(DATABASE_URL, echo=SQL_ECHO)
-
-def create_db():
-    SQLModel.metadata.create_all(engine)

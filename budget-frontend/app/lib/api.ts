@@ -74,19 +74,19 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}): Pro
   } catch (error) {
     const message = error instanceof Error ? error.message : "Netzwerkfehler beim Abrufen der Daten.";
     const fallbackResponse = new Response(null, {
-      status: 0,
+      status: 502,
       statusText: "Netzwerkfehler",
     });
 
     return {
       response: fallbackResponse,
       ok: false,
-      status: 0,
+      status: 502,
       statusText: "Netzwerkfehler",
       url: "",
       headers: new Headers(),
       error: {
-        status: 0,
+        status: 502,
         message,
       },
       json: async () => null,
