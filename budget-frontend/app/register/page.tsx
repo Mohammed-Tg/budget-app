@@ -21,13 +21,15 @@ export default function RegisterPage() {
       setError("Die Passwörter stimmen nicht überein.");
       return;
     }
+    
+    const normalizedEmail = email.trim().toLowerCase();
 
     setLoading(true);
 
     try {
       const registerResponse = await apiFetch("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
       if (!registerResponse.ok) {
@@ -39,7 +41,7 @@ export default function RegisterPage() {
 
       const loginResponse = await apiFetch("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
       const loginData = await safeApiJson<{ access_token?: string; detail?: unknown }>(loginResponse);
@@ -51,7 +53,7 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", loginData.access_token);
       window.dispatchEvent(new Event("authchange"));
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Netzwerkfehler beim Registrieren.");
     } finally {
@@ -74,6 +76,7 @@ export default function RegisterPage() {
               className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
               placeholder="deine@email.de"
               required
+              disabled={loading}
             />
           </label>
 
@@ -86,6 +89,7 @@ export default function RegisterPage() {
               className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
               placeholder="Passwort"
               required
+              disabled={loading}
             />
           </label>
 
@@ -98,6 +102,7 @@ export default function RegisterPage() {
               className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
               placeholder="Passwort wiederholen"
               required
+              disabled={loading}
             />
           </label>
 
