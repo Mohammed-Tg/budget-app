@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { apiFetch, getErrorMessage, safeApiJson } from "../lib/api";
 import { useProtectedRoute } from "../lib/auth";
+import { CATEGORY_MAP } from "../lib/categories";
 
 type TransactionType = "income" | "expense";
 
@@ -20,7 +21,7 @@ export default function Transactions() {
   const { authorized, checking } = useProtectedRoute();
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<string>(CATEGORY_MAP.expense[0]);
   const [type, setType] = useState<TransactionType>("expense");
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +47,10 @@ export default function Transactions() {
     loadTransactions();
   }, [authorized]);
 
+  useEffect(() => {
+    setCategory(CATEGORY_MAP[type][0]);
+  }, [type]);
+
   if (checking) {
     return (
       <Layout>
@@ -61,7 +66,15 @@ export default function Transactions() {
   const handleCreate = async () => {
     setError(null);
 
-    if (!category.trim()) {
+     const numericAmount = Number(amount);
+
+    if (!amount || Number.isNaN(numericAmount) || numericAmount <= 0) {
+    setError("Bitte einen gültigen Betrag eingeben.");
+    return;
+  }
+
+
+    if (!category) {
       setError("Kategorie ist erforderlich.");
       return;
     }
@@ -70,7 +83,7 @@ export default function Transactions() {
       const response = await apiFetch("/transactions/", {
         method: "POST",
         body: JSON.stringify({
-          amount: Number(amount),
+          amount: numericAmount,
           type,
           category,
         }),
@@ -83,8 +96,8 @@ export default function Transactions() {
       }
 
       setAmount("");
-      setCategory("");
       setType("expense");
+      setCategory(CATEGORY_MAP.expense[0]);
       loadTransactions();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Netzwerkfehler beim Erstellen der Transaktion.");
@@ -155,24 +168,29 @@ export default function Transactions() {
           </label>
 
           <label className="block mb-3 text-sm font-medium text-slate-700">
-            Kategorie
-            <input
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
-              placeholder="z. B. Lebensmittel"
-            />
-          </label>
-
-          <label className="block mb-4 text-sm font-medium text-slate-700">
             Typ
             <select
               value={type}
-              onChange={(e) => setType(e.target.value as TransactionType)}
+              onChange={(e) => setType(e.target.value as "income" | "expense")}
               className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
             >
               <option value="expense">Ausgabe</option>
               <option value="income">Einnahme</option>
+            </select>
+          </label>
+
+          <label className="block mb-3 text-sm font-medium text-slate-700">
+            Kategorie
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+            >
+              {CATEGORY_MAP[type].map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
             </select>
           </label>
 
